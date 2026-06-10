@@ -1,21 +1,35 @@
 use std::io::{self, BufRead, Write};
 use std::collections::HashMap;
 
-fn save(store: &HashMap<String, String>){
-    let mut file = std::fs::File::create("db.txt").unwrap();
-    for (key, value) in store.iter() {
-        writeln!(file, "{} {}", key, value).unwrap();
-    }
-}
+fn append(entry: &str){
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("db.log")
+        .unwrap();
+    writeln!(file, "{}", entry).unwrap();
+ }
 
 fn load() -> HashMap<String, String> {
     let mut store = HashMap::new();
-    if let Ok(content) =  std::fs::read_to_string("db.txt") {
+    if let Ok(content) =  std::fs::read_to_string("db.log") {
         for line in content.lines() {
             let mut parts = line.splitn(2, ' ');
-            let key = parts.next().unwrap_or("").to_string();
-            let value = parts.next().unwrap_or("").to_string();
-            store.insert(key, value);
+            let op =parts.next().unwrap_or("");
+            let rest = parts.next().unwrap_or("");
+            match op {
+                "SET" => {
+                    let mut p = rest.splitn(2, ' ');
+                    let key = p.next().unwrap_or("").to_string();
+                    let value = p.next().unwrap_or("").to_string();
+                    store.insert(key, value);
+                    append(&format!("SET {} {}", key, value));
+                }
+                "DELETE" => {store.remove(rest); } 
+                append(&format!("SET {} {}", key, value));
+                _=> {}           
+            }
+            
         }
     }
     store
@@ -72,8 +86,7 @@ fn main() {
                 println!("OK");
             }
 
-            "EXIT" => { save(&store); std::process::exit(0);}
-            _ => println!("Unknown command: {}", cmd),
+            "EXIT" => std::process::exit(0),
         }
     }
 }    
