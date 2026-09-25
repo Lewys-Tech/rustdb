@@ -28,6 +28,8 @@ fn load() -> HashMap<String, String> {
                 "DELETE" => {store.remove(rest); } 
                 
                  _ => {}          
+
+                 
             }
             
         }
@@ -86,7 +88,18 @@ fn main() {
                 store.remove(&key);
                 append(&format!("DELETE {}", key));
                 println!("OK");
+
             }
+
+            "COMPACT" => {
+                    let mut file = std::fs::File::create("db.log").unwrap();
+                    for (key, value) in store.iter() {
+                        writeln!(file, "SET {} {}", key, value).unwrap();
+                    }
+                    println!("Compacted  {} keys", store.len())
+
+                   
+                 }
 
             "EXIT" => std::process::exit(0),
             _ => println!("unkown command: {}", cmd),
