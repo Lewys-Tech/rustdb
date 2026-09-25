@@ -23,11 +23,11 @@ fn load() -> HashMap<String, String> {
                     let key = p.next().unwrap_or("").to_string();
                     let value = p.next().unwrap_or("").to_string();
                     store.insert(key, value);
-                    append(&format!("SET {} {}", key, value));
+                
                 }
                 "DELETE" => {store.remove(rest); } 
-                append(&format!("SET {} {}", key, value));
-                _=> {}           
+                
+                 _ => {}          
             }
             
         }
@@ -63,6 +63,7 @@ fn main() {
                 }
                 let key = args[0].to_string();
                 let value = args[1].to_string();
+                append(&format!("SET {} {}", key, value));
                 store.insert(key, value);
                 println!("OK");
             }
@@ -83,10 +84,12 @@ fn main() {
             "DELETE" => {
                 let key = args[0].to_string();
                 store.remove(&key);
+                append(&format!("DELETE {}", key));
                 println!("OK");
             }
 
             "EXIT" => std::process::exit(0),
+            _ => println!("unkown command: {}", cmd),
         }
     }
 }    
